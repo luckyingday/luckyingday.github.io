@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Linux的关机与重启命令</title>
+    <url>/2022/01/08/Linux%E7%9A%84%E5%85%B3%E6%9C%BA%E4%B8%8E%E9%87%8D%E5%90%AF%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<h3 id="重启命令"><a href="#重启命令" class="headerlink" title="重启命令"></a>重启命令</h3><p>1 reboot<br>2 shutdown -r now 立刻重启（root用户使用）<br>3 shutdown -r 10 10分钟后重启（root用户使用）<br>4 shutdown -r 20:25 在时间为20:25分时重启（root用户使用）<br>如果是通过shutdown命令设置重启的话，可以用shutdown -c命令取消重启</p>
+<h3 id="关机命令"><a href="#关机命令" class="headerlink" title="关机命令"></a>关机命令</h3><p>1 halt 立刻关机<br>2 poweroff 立刻关机<br>3 shutdown -h now 立刻关机（root用户使用）<br>4 shutdown -h 10 10分钟后关机<br>如果通过shutdown命令设置关机，可以用shutdown -c命令取消关机  </p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>git clone 连接报错速度过慢的一些解决方法</title>
+    <url>/2022/01/07/git%E8%BF%9E%E6%8E%A5%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
+    <content><![CDATA[<p>当我们用git克隆或上传一个项目的时候，总是会连接报错，或者速度很慢。</p>
+<h3 id="解决方法1"><a href="#解决方法1" class="headerlink" title="解决方法1"></a>解决方法1</h3><p>1 首先我们先看看主机是否能够ping通github。（<code>ping github.com</code>）如果请求超时，那么应该是本地DNS无法解析导致的。<br>2 此时需要打开C:\windows\System32\drivers\etc下的hosts文件，添加以下两行内容来帮助主机对github网址进行解析。  </p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">192.30.255.112  github.com git   </span><br><span class="line">185.31.16.184 github.global.ssl.fastly.net  </span><br></pre></td></tr></table></figure>
+<p>3 此时再尝试ping github.com，应该就可以ping得通了，而且git clone也能够正常使用了。</p>
+<h3 id="解决办法2"><a href="#解决办法2" class="headerlink" title="解决办法2"></a>解决办法2</h3><p>如果是有时可以使用git 克隆或上传，但是速度很慢，连接容易断开，那么可以考虑为git设置代理模式。</p>
+<h4 id="设置代理"><a href="#设置代理" class="headerlink" title="设置代理"></a>设置代理</h4><p>全局代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># git config --global http.proxy http://127.0.0.1:1081 </span><br><span class="line"># git config --global https.proxy https://127.0.0.1:1081 </span><br><span class="line"></span><br><span class="line"># 实测后，用下面这条就能实现加速 clone 的效果，且能避开一些设置证书的坑</span><br><span class="line">git config --global http.proxy 127.0.0.1:1081</span><br><span class="line"># 如果用的是 v2rayN，默认使用 socks 协议，也可以用下面的命令</span><br><span class="line">git config --global http.proxy socks5://127.0.0.1:1080</span><br></pre></td></tr></table></figure>
+
+<p>局部代理（仅在github clone的仓库内生效）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># git config --local http.proxy http://127.0.0.1:1081</span><br><span class="line"># git config --local https.proxy https://127.0.0.1:1081</span><br><span class="line"></span><br><span class="line"># 实测后，用下面这条就能够实现 clone 的效果，且能避开一些设置证书的坑</span><br><span class="line">git config --local http.proxy 127.0.0.1:1081</span><br><span class="line"># 如果用的是v2rayN，默认使用socks协议，也可以用下面的命令</span><br><span class="line">git config --local http.proxy socks5://127.0.0.1:1080</span><br></pre></td></tr></table></figure>
+
+<p>只对github及进行代理，对国内的仓库不影响：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># git config --global http.https://github.com.proxy https://127.0.0.1:1081</span><br><span class="line"># git config --global https.https://github.com.proxy https://127.0.0.1:1081</span><br><span class="line"></span><br><span class="line"># 实测后，用下面这条就能实现加速 clone 的效果，且能避开一些设置证书的坑</span><br><span class="line">git config --global http.https://github.com.proxy 127.0.0.1:1081</span><br><span class="line"># 如果用的是v2rayN，默认使用socks协议，也可以使用下面的命令</span><br><span class="line">git config --global http.https://github.com.proxy socks5://127.0.0.1:1080</span><br></pre></td></tr></table></figure>
+
+<h4 id="查询是否使用代理"><a href="#查询是否使用代理" class="headerlink" title="查询是否使用代理"></a>查询是否使用代理</h4><p>查询当前git环境是否使用了代理<br>查询全局代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global http.proxy</span><br><span class="line">git config --global https.proxy</span><br></pre></td></tr></table></figure>
+
+<p>查询局部代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --local http.proxy</span><br><span class="line">git config --local https.proxy</span><br></pre></td></tr></table></figure>
+
+<p>查询对github进行的代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global http.https://github.com.proxy</span><br><span class="line">git config --global https.https://github.com.proxy</span><br></pre></td></tr></table></figure>
+
+<h4 id="取消代理"><a href="#取消代理" class="headerlink" title="取消代理"></a>取消代理</h4><p>取消当前git环境使用的代理，恢复直连模式<br>取消全局代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global --unset http.proxy</span><br><span class="line">git config --global --unset https.proxy</span><br></pre></td></tr></table></figure>
+
+<p>取消局部代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --local --unset http.proxy</span><br><span class="line">git config --local --unset https.proxy</span><br></pre></td></tr></table></figure>
+
+<p>取消对github的代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global --unset http.https://github.com.proxy</span><br><span class="line">git config --global --unset https.https://github.com.proxy</span><br></pre></td></tr></table></figure>
+
+<h4 id="注意代理端口"><a href="#注意代理端口" class="headerlink" title="注意代理端口"></a>注意代理端口</h4><p>以上的代理地址中的端口号代理软件或者自己设置的，每个人的端口可能不一样。要根据实际情况进行修改。同时也要区分socks端口与http端口。</p>
+<h3 id="解决方法3"><a href="#解决方法3" class="headerlink" title="解决方法3"></a>解决方法3</h3><p>1 在进行git push操作时，出现500错误，根据错误信息判断是文件过大所致。<br>2 可以尝试调整git的传输缓存。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git config --global http.postBuffer 524288000</span><br></pre></td></tr></table></figure>
+<p>3 因为git默认设置http post的缓存为1M，如果遇到大文件，需要调整post缓存。</p>
+]]></content>
+      <categories>
+        <category>git</category>
+      </categories>
+      <tags>
+        <tag>git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>sql注入面试题</title>
+    <url>/2022/01/05/sql%E6%B3%A8%E5%85%A5%E9%9D%A2%E8%AF%95%E9%A2%98/</url>
+    <content><![CDATA[<h2 id="0x01-sql注入类型，绕过及防御"><a href="#0x01-sql注入类型，绕过及防御" class="headerlink" title="0x01 sql注入类型，绕过及防御"></a>0x01 sql注入类型，绕过及防御</h2><h3 id="1-sql注入类型"><a href="#1-sql注入类型" class="headerlink" title="1 sql注入类型"></a>1 sql注入类型</h3><p>联合注入 （union）<br>报错注入 （xpath语法错误导致，主要利用extractvalue和updatexml两个函数）<br>布尔注入 (?id =1’ and 1=1  ?id=1’ and 1=2判断注入点与延时注入类似，利用猜测的方法)<br>延时注入 （sleep()函数，用length(),substr(),ascii(),if()等来进行判断数据库内容)<br>二次注入 （未正确过滤数据，攻击者构造的恶意数据存储在数据库中，注册账户admin’–）<br>堆叠注入 (mysql_multi_query(),可支持多个sql语句同时执行，用；进行分隔）<br>头部注入 （更改请求头部信息，前提是请求头部也可以向数据库发送查询信息）<br>宽字节注入 （GBK占用2字节，ASCII占用1字节，addslashes()）  </p>
+<h3 id="2-绕过方法"><a href="#2-绕过方法" class="headerlink" title="2 绕过方法"></a>2 绕过方法</h3><p>双写关键字 （select改为seleselectct）<br>替换关键字 ( and = &amp;&amp;   or = || &emsp;  xor = | &emsp; not = !  等于号可以改成like  &lt;&gt; 等价于 !=<br>大小写 （如：select改为Select）<br>使用注释符（–  #  /*  */）<br>特殊编码 （十六进制   ascii编码 ）<br>空格过滤绕过（ /*  */   两个空格  tap  `  回车 ()）  </p>
+<h3 id="3-防御方法"><a href="#3-防御方法" class="headerlink" title="3 防御方法"></a>3 防御方法</h3><p>过滤关键字，空格注释符等，<br>使用转义<br>设置数据库权限，使其只能查询不能更新和写入<br>限制查询长度<br>限制查询类型   </p>
+]]></content>
+      <categories>
+        <category>web安全</category>
+        <category>面试</category>
+      </categories>
+      <tags>
+        <tag>sql注入</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>windows下ruby的下载与gem安装</title>
+    <url>/2022/01/06/windows%E4%B8%8Bruby%E7%9A%84%E4%B8%8B%E8%BD%BD%E4%B8%8Egem%E5%AE%89%E8%A3%85/</url>
+    <content><![CDATA[<p>主要讲述ruby的下载和gem的安装。</p>
+<h2 id="ruby的安装"><a href="#ruby的安装" class="headerlink" title="ruby的安装"></a>ruby的安装</h2><p>ruby的版本可以通过<a href="https://rubyinstaller.org/downloads/">https://rubyinstaller.org/downloads/</a><br>进入网站下载。下载ruby安装包之后直接点击进行安装就可以。<br>查看版本：cmd中输入<code>buby -version</code>  可以查看buby版本，就代表ruby安装成功了。  </p>
+<h2 id="gem的更新"><a href="#gem的更新" class="headerlink" title="gem的更新"></a>gem的更新</h2><p>输入<code>gem -v</code>可以查看当前gem的版本<br>为了进一步安装需要的ruby包，需要升级gem本身，这里使用update命令进行gem的升级<br><code>gem update --system</code><br>之后就可以使用gem安装其它的ruby 包。比如：安装activemodel 5.0.0.1包<br><code>gem install activemodel --version=5.0.0.1</code>  </p>
+<h2 id="Ruby-Gem命令详解"><a href="#Ruby-Gem命令详解" class="headerlink" title="Ruby Gem命令详解"></a>Ruby Gem命令详解</h2><p>更新gem自身：<code>gem update --system</code>  </p>
+<p>从gem源安装gem包： <code>gem install [gemname]</code>  </p>
+<p>从本机安装gem包：<code>gem install -l [gemname].gem</code>  </p>
+<p>安装指定版本的gem包：<code>gem install [gemname] --version=[ver]</code>  </p>
+<p>更新所有已安装的gem包：<code>gem update</code>  </p>
+<p>更新指定的gem包：<code>gem update [gemname]</code>  </p>
+<p>删除指定的gem包（注意此命令将删除改gem包已安装的所有版本）：<code>gem uninstall [gemname]</code>  </p>
+<p>删除某指定版本gem：<code>gem uninstall [gemname] --version=[ver]</code>  </p>
+<p>查看本机已经安装的所有gem包： <code>gem list</code>  </p>
+]]></content>
+      <categories>
+        <category>buby</category>
+        <category>blog</category>
+      </categories>
+      <tags>
+        <tag>ruby</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>windows中为cmd设置代理</title>
+    <url>/2022/01/06/windows%E4%B8%AD%E4%B8%BAcmd%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86/</url>
+    <content><![CDATA[<p>在CMD环境下设置代理可能不是很常用，但是某些情况下还是可能会用到，比如有些资源网站被墙了，此时你如果想访问这些资源时，只能通过代理来访问相应的资源，而你需要在CMD环境下下载墙外的资源时。当然，如果你使用某些代理软件为所有通讯设置了代理，那就不需要这些设置了。    </p>
+<p>为CMD设置代理很简单，首先打开cmd然后输入如下命令：set http_proxy=<a href="http://proxy.domain.com:port">http://proxy.domain.com:port</a>        </p>
+<p>其中<a href="http://proxy.domain.com/">http://proxy.domain.com</a> 是代理服务器的地址，如果本机有代理环境设置为：<a href="http://127.0.0.1/">http://127.0.0.1</a> 即可。port是代理服务器提供服务代理服务的端口号，比如8087。如果代理服务器需要用户名和密码的话，那么需要做如下设置：<br>   set http_proxy_user=<br>   set http_proxy_pass=<br>设置完成后，该CMD窗口就工作在代理环境下面了。</p>
+<p>想要取消cmd代理<br>set http_proxy=“”<br>set https_proxy=””</p>
+]]></content>
+      <categories>
+        <category>windows</category>
+        <category>proxy</category>
+      </categories>
+      <tags>
+        <tag>proxy</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用ssh连接Linux虚拟机</title>
+    <url>/2022/01/08/%E4%BD%BF%E7%94%A8ssh%E8%BF%9E%E6%8E%A5Linux%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
+    <content><![CDATA[<h4 id="1-首先查看Linux虚拟机中是否安装了openssh-server"><a href="#1-首先查看Linux虚拟机中是否安装了openssh-server" class="headerlink" title="1 首先查看Linux虚拟机中是否安装了openssh-server"></a>1 首先查看Linux虚拟机中是否安装了openssh-server</h4><p>使用命令<code>ps -e | grep ssh</code><br>如果安装了，在进程列表会显示，ssh-agent sshd相关进程。  </p>
+<h4 id="2-如果没有安装，则执行以下步骤进行安装"><a href="#2-如果没有安装，则执行以下步骤进行安装" class="headerlink" title="2 如果没有安装，则执行以下步骤进行安装"></a>2 如果没有安装，则执行以下步骤进行安装</h4><p>执行<code>sudo apt-get update</code><br>在执行<code>sudo apt-get install openssh-server</code><br>如果报依赖关系错误既openssh-client版本问题，则执行<code>sudo apt-get install openssh-client=版本号</code><br>在执行<code>sudo apt-get install openssh-server</code>即可完成安装  </p>
+<h4 id="3-确认虚拟机已经启动ssh"><a href="#3-确认虚拟机已经启动ssh" class="headerlink" title="3 确认虚拟机已经启动ssh"></a>3 确认虚拟机已经启动ssh</h4><p>终端输入<code>suso service ssh start</code>启动ssh<br>输入<code>ifconfig</code>查看虚拟机ip  </p>
+<h4 id="4-然后打开ssh连接软件（如xshell）进行连接"><a href="#4-然后打开ssh连接软件（如xshell）进行连接" class="headerlink" title="4 然后打开ssh连接软件（如xshell）进行连接"></a>4 然后打开ssh连接软件（如xshell）进行连接</h4><p>打开xshell，新建会话<br>在连接选项中输入主机字段为刚刚查看的虚拟机的ip，端口号默认为22端口。<br>然后选择用户身份验证字段，输入用户名和密码，点击连接即可。  </p>
+<h4 id="5-解决ssh服务拒绝了密码，但密码是正确的"><a href="#5-解决ssh服务拒绝了密码，但密码是正确的" class="headerlink" title="5 解决ssh服务拒绝了密码，但密码是正确的"></a>5 解决ssh服务拒绝了密码，但密码是正确的</h4><p>1 终端输入<code>vim /etc/ssh/sshd_config</code><br>2 从里面找到<code>#PermitRootLogin</code> 这一行，将其改为<code>PermitRootLogin yes</code><br>（注意：该语句前本来的#号要去掉才会生效。）<br>3 输入：wq，保存并退出<br>4 输入/etc/init.d/ssh restart 重启ssh服务<br>5 此时再使用xshell进行连接，就没问题了。</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux ssh</tag>
+      </tags>
+  </entry>
+</search>
