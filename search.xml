@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>LanGrayOA漏洞发现与利用</title>
+    <url>/2022/01/19/LanGrayOA%E6%BC%8F%E6%B4%9E%E5%8F%91%E7%8E%B0%E4%B8%8E%E5%88%A9%E7%94%A8/</url>
+    <content><![CDATA[<p>蓝凌OA国内使用的一款OA产品，历史上主要有出现过几个漏洞，主要是任意文件读取的漏洞，然后基于任意文件读取可以获得密钥，然后解密后进入后台，后台有一些上传，注入等问题。<br>寻找蓝凌OA方法：body中包含：“sys/ui/extend/theme/default/style/”或者关键词“蓝凌软件”  </p>
+<h3 id="任意文件读取（landray-oa-fileread-yaml）"><a href="#任意文件读取（landray-oa-fileread-yaml）" class="headerlink" title="任意文件读取（landray-oa-fileread.yaml）"></a>任意文件读取（landray-oa-fileread.yaml）</h3><p>Nuclei：扫描工具，基于模块来跨目标发送请求，可以对已知路径有效的扫描，主要用在网络侦查的初始阶段，比较好用的一个地方是，在被WAF后还可以自动重传。<br>1 下载地址：<a href="https://github.com/projectdiscovery/neclei">https://github.com/projectdiscovery/neclei</a><br>2 更新下载模板：<a href="https://github.com/projectdiscovery/nulei-templates">https://github.com/projectdiscovery/nulei-templates</a>  </p>
+<p>使用nuclei的poc：landray-oa-fileread.yaml,检测其漏洞：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nuclei.exe -t nuclei-templates\vulnerabilities\other\landray-oa-fileread.yaml -l target\landrayoa.txt -o results\landrayoa-fileread.txt</span><br></pre></td></tr></table></figure>
+
+<p>检测到存在漏洞的url会保存在results文件夹的landrayoa-fileread.txt中。  </p>
+<h3 id="找个存在漏洞的url进行复现"><a href="#找个存在漏洞的url进行复现" class="headerlink" title="找个存在漏洞的url进行复现"></a>找个存在漏洞的url进行复现</h3><p><img src="F:\GitHub\blog\source_posts\LanGrayOA漏洞发现与利用\1.png" alt="image-20220120111917616"></p>
+<p>注：提交方式应该改为POST   </p>
+<p>从这里可以看出这个网站可以存在任意文件读取漏洞  </p>
+]]></content>
+      <categories>
+        <category>漏洞复现</category>
+      </categories>
+      <tags>
+        <tag>任意文件读取</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Linux的关机与重启命令</title>
     <url>/2022/01/08/Linux%E7%9A%84%E5%85%B3%E6%9C%BA%E4%B8%8E%E9%87%8D%E5%90%AF%E5%91%BD%E4%BB%A4/</url>
     <content><![CDATA[<h3 id="重启命令"><a href="#重启命令" class="headerlink" title="重启命令"></a>重启命令</h3><p>1 reboot<br>2 shutdown -r now 立刻重启（root用户使用）<br>3 shutdown -r 10 10分钟后重启（root用户使用）<br>4 shutdown -r 20:25 在时间为20:25分时重启（root用户使用）<br>如果是通过shutdown命令设置重启的话，可以用shutdown -c命令取消重启</p>
@@ -61,21 +81,6 @@
       </tags>
   </entry>
   <entry>
-    <title>sql注入面试题</title>
-    <url>/2022/01/05/sql%E6%B3%A8%E5%85%A5%E9%9D%A2%E8%AF%95%E9%A2%98/</url>
-    <content><![CDATA[<h2 id="0x01-sql注入类型，绕过及防御"><a href="#0x01-sql注入类型，绕过及防御" class="headerlink" title="0x01 sql注入类型，绕过及防御"></a>0x01 sql注入类型，绕过及防御</h2><h3 id="1-sql注入类型"><a href="#1-sql注入类型" class="headerlink" title="1 sql注入类型"></a>1 sql注入类型</h3><p>联合注入 （union）<br>报错注入 （xpath语法错误导致，主要利用extractvalue和updatexml两个函数）<br>布尔注入 (?id =1’ and 1=1  ?id=1’ and 1=2判断注入点与延时注入类似，利用猜测的方法)<br>延时注入 （sleep()函数，用length(),substr(),ascii(),if()等来进行判断数据库内容)<br>二次注入 （未正确过滤数据，攻击者构造的恶意数据存储在数据库中，注册账户admin’–）<br>堆叠注入 (mysql_multi_query(),可支持多个sql语句同时执行，用；进行分隔）<br>头部注入 （更改请求头部信息，前提是请求头部也可以向数据库发送查询信息）<br>宽字节注入 （GBK占用2字节，ASCII占用1字节，addslashes()）  </p>
-<h3 id="2-绕过方法"><a href="#2-绕过方法" class="headerlink" title="2 绕过方法"></a>2 绕过方法</h3><p>双写关键字 （select改为seleselectct）<br>替换关键字 ( and = &amp;&amp;   or = || &emsp;  xor = | &emsp; not = !  等于号可以改成like  &lt;&gt; 等价于 !=<br>大小写 （如：select改为Select）<br>使用注释符（–  #  /*  */）<br>特殊编码 （十六进制   ascii编码 ）<br>空格过滤绕过（ /*  */   两个空格  tap  `  回车 ()）  </p>
-<h3 id="3-防御方法"><a href="#3-防御方法" class="headerlink" title="3 防御方法"></a>3 防御方法</h3><p>过滤关键字，空格注释符等，<br>使用转义<br>设置数据库权限，使其只能查询不能更新和写入<br>限制查询长度<br>限制查询类型   </p>
-]]></content>
-      <categories>
-        <category>web安全</category>
-        <category>面试</category>
-      </categories>
-      <tags>
-        <tag>sql注入</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>windows下ruby的下载与gem安装</title>
     <url>/2022/01/06/windows%E4%B8%8Bruby%E7%9A%84%E4%B8%8B%E8%BD%BD%E4%B8%8Egem%E5%AE%89%E8%A3%85/</url>
     <content><![CDATA[<p>主要讲述ruby的下载和gem的安装。</p>
@@ -116,6 +121,110 @@
       </tags>
   </entry>
   <entry>
+    <title>sql注入面试题</title>
+    <url>/2022/01/05/sql%E6%B3%A8%E5%85%A5%E9%9D%A2%E8%AF%95%E9%A2%98/</url>
+    <content><![CDATA[<h2 id="0x01-sql注入类型，绕过及防御"><a href="#0x01-sql注入类型，绕过及防御" class="headerlink" title="0x01 sql注入类型，绕过及防御"></a>0x01 sql注入类型，绕过及防御</h2><h3 id="1-sql注入类型"><a href="#1-sql注入类型" class="headerlink" title="1 sql注入类型"></a>1 sql注入类型</h3><p>联合注入 （union）<br>报错注入 （xpath语法错误导致，主要利用extractvalue和updatexml两个函数）<br>布尔注入 (?id =1’ and 1=1  ?id=1’ and 1=2判断注入点与延时注入类似，利用猜测的方法)<br>延时注入 （sleep()函数，用length(),substr(),ascii(),if()等来进行判断数据库内容)<br>二次注入 （未正确过滤数据，攻击者构造的恶意数据存储在数据库中，注册账户admin’–）<br>堆叠注入 (mysql_multi_query(),可支持多个sql语句同时执行，用；进行分隔）<br>头部注入 （更改请求头部信息，前提是请求头部也可以向数据库发送查询信息）<br>宽字节注入 （GBK占用2字节，ASCII占用1字节，addslashes()）  </p>
+<h3 id="2-绕过方法"><a href="#2-绕过方法" class="headerlink" title="2 绕过方法"></a>2 绕过方法</h3><p>双写关键字 （select改为seleselectct）<br>替换关键字 ( and = &amp;&amp;   or = || &emsp;  xor = | &emsp; not = !  等于号可以改成like  &lt;&gt; 等价于 !=<br>大小写 （如：select改为Select）<br>使用注释符（–  #  /*  */）<br>特殊编码 （十六进制   ascii编码 ）<br>空格过滤绕过（ /*  */   两个空格  tap  `  回车 ()）  </p>
+<h3 id="3-防御方法"><a href="#3-防御方法" class="headerlink" title="3 防御方法"></a>3 防御方法</h3><p>过滤关键字，空格注释符等，<br>使用转义<br>设置数据库权限，使其只能查询不能更新和写入<br>限制查询长度<br>限制查询类型   </p>
+]]></content>
+      <categories>
+        <category>web安全</category>
+        <category>面试</category>
+      </categories>
+      <tags>
+        <tag>sql注入</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>内网渗透测试基础</title>
+    <url>/2022/01/22/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80/</url>
+    <content><![CDATA[<h1 id="内网渗透测试基础"><a href="#内网渗透测试基础" class="headerlink" title="内网渗透测试基础"></a>内网渗透测试基础</h1><p>​        内网也称为局域网（LAN），指的是在某一区域内由多台计算机互连而成的计算机组。内网是封闭的，可以由两台计算机组成，可以由一个公司内的大量计算机组成。局域网中，可以实现文件管理，应用软件共享，打印机共享，工作组内的日程安排等等。</p>
+<h2 id="内网基础知识"><a href="#内网基础知识" class="headerlink" title="内网基础知识"></a>内网基础知识</h2><h3 id="工作组"><a href="#工作组" class="headerlink" title="工作组"></a>工作组</h3><p>​        一个大型单位中，可能由成千上万台计算机组成局域网，如果不对其进行分组，那么网络会非常混乱，所以产生了工作组（work group）这一概念。  </p>
+<p>​        将局域网内的计算机按照功能或者部门分为不同的工作组，例如将技术部的计算机列入“技术部”工作组，将行政部的计算机列入“行政部”工作组。想要访问某个部门的资源，只要在“网络”上双击该部门的工作组名，就可以看到该部门的所有计算机。相比不分组，会显得井然有序得多。</p>
+<p>​        加入工作组：右击桌面我的电脑图标，选择属性→计算机名→更改→在工作组一栏填写想要加入的工作组。（如果该工作组不存在，则会新建一个工作组）</p>
+<p><img src="%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%5C1.png" alt="1"></p>
+<p>​        工作组中，所有计算机都是对等的（没有服务器和客户机之分）。</p>
+<h3 id="域"><a href="#域" class="headerlink" title="域"></a>域</h3><p>​        <strong>域</strong>（Domain）是一个有安全边界的计算机集合（安全边界指，在两个域中，一个域中的用户无法访问另一个域中的资源）。与工作组相比，域的安全管理控制机制更加严格。用户想要访问域内的资源，必须以合法的身份登录域，而用户对域内的资源拥有什么样的权限，还取决于用户在域内的身份。</p>
+<p>​        <strong>域控制器</strong>（Domain Controller，DC）是域中的一台类似管理服务器的计算机，可以理解为一个单位的门禁系统。域控制器负责所有连入的计算机和用户的验证工作。域内的计算机如果想要互相访问，都要经过域控制器的审核。</p>
+<p>​        域控制器中存在由这个域的账户、密码、属于这个域的计算机等信息构成的数据库。当计算机连接到域时，域控制器首先要鉴别这台计算机是否属于域，以及用户使用的登录账号是否存在，密码是否正确。如果以上信息有一项不正确，则域控制器则会禁止该用户登录。</p>
+<p>​        域控制器是整个域的通信枢纽，所有的权限身份验证都在域控制器上进行，也就是说，域内所有用来验证身份的账号和密码散列值都保存在域控制器中。</p>
+<p>​        域一般有如下几个环境：</p>
+<ol>
+<li><p><strong>单域</strong></p>
+<p>​        通常一个小公司，只要建立一个域就可以满足需求。在一个域内，一般至少两台域服务器，一台作为DC，另一台作为备份DC。活动目录的数据库（包括用户的账号信息）是存储在DC的，如果没有备份DC，一旦DC瘫痪了，域内的其他用户就不能登录该域了。如果有一台备份DC，至少该域还能正常使用（把瘫痪的DC恢复即可）。</p>
+</li>
+<li><p><strong>父域和子域</strong></p>
+<p>​        出于管理及其他需求，需要在网络中划分多个域。第一个域成为父域，各分部的域成为该域的子域。例如，一个大公司的各个分公司位于不同地点。就可以使用父域和子域。这样处理有一个好处，就是分公司可以通过自己的域来管理自己的资源。还有一种情况就是处于安全策略的考虑。例如，一个公司的财务部希望使用特定的安全策略（包括账号密码策略等），那么可以将财务部作为一个子域来单独管理。</p>
+</li>
+<li><p><strong>域树</strong></p>
+<p>​        域树（Tree）是多个域通过建立信任关系组成的集合。一个域管理员只能管理本域，不能访问或者管理其他域。如果域之间需要互相访问，则需要建立信任关系（Trust Relation）。信任关系是连接不同域的桥梁。域树内的父域和子域，不但可以按照需要互相管理，还可以跨网络分配文件和打印机等设备及资源，从而在不同的域之间实现网络资源的共享和管理、通信及数据传输。</p>
+<p>​        域树中，一个父域可以包含多个子域。子域是相对父域来说的。类如asia.abc.com的级别比abc.com的级别低，而cn.asia.abc.com的级别比asia.abc.com低。子域只能使用父域的名字作为其域名的后缀。</p>
+</li>
+<li><p><strong>域森林</strong></p>
+<p>​        域森林（forest）是指多个域树通过建立信任关系组成的集合。例如，在一个公司兼并场景中，某公司使用域树abc.com，而兼并的公司本来的域树为abc.net（或者需要为被兼并公司建立单独的域树时），域树abc.net无法挂在域树abc.com下。所以两个域树之间需要通过建立信任关系来构成域森林。通过域树之间的信任关系，可以管理和使用整个域森林中的资源，并保留被兼并公司自身原有的特性。</p>
+</li>
+<li><p><strong>域名服务器</strong></p>
+<p>​        域名服务器（Domain Name Server，DNS）是指用于实现域名（Domain Name）和与之相对应的IP地址转换的服务器。域树的域名和DNS域名非常相似。实际上，因为域中的计算机是使用DNS来定位域服务器、服务器及其他计算机、网络服务的，所有域的名字就是DNS域的名字。在内网渗透测试中，大都是通过寻找DNS服务器来确定域控制器的位置的（DNS服务器和域控制器通常配置在同一台机器上）。</p>
+</li>
+</ol>
+<h3 id="活动目录"><a href="#活动目录" class="headerlink" title="活动目录"></a>活动目录</h3><p>​        活动目录（Active Directory，AD）是指域环境中提供目录服务的组件。</p>
+<p>​        目录用于存储有关网络对象的信息。目录服务是指帮助用户快速、准确地从目录中找到其所需要的信息的服务。活动目录实现了目录服务，为企业提供了网络环境的集中式管理机制。</p>
+<p>​        域树内的所有域共享一个活动目录。</p>
+<p>​        活动目录主要提供以下功能：</p>
+<ul>
+<li>账号集中管理：所有账号均存储在服务器中，以便执行命令和重置密码等。</li>
+<li>软件集中管理：统一推送软件、安装网络打印机等。利用软件发布策略分发软件，可以让用户自由选择需要安装的软件。</li>
+<li>环境集中管理：统一客户端桌面、IE、TCP/IP协议等设置。</li>
+<li>增强安全性：统一部署杀毒软件和病毒扫描任务、集中管理用户的计算机权限、统一制定用户密码策略等。可以监控网络，对资料进行统一管理。</li>
+<li>更可靠、更短的宕机时间：例如，利用活动目录控制用户访问权限，利用群集、负载均衡等技术对文件服务器进行容灾设置。网络更可靠，宕机时间更短。</li>
+</ul>
+<p>​        活动目录是微软提供的统一管理基础平台，ISA、Exchange、SMS等都依赖这个平台。</p>
+<h3 id="域控制器和活动目录的区别"><a href="#域控制器和活动目录的区别" class="headerlink" title="域控制器和活动目录的区别"></a>域控制器和活动目录的区别</h3><p>​        把网络中的众多对象（如计算机、用户、打印机、共享文件等）分门别类、井然有序地放在一个大仓库中，并将检索信息整理好，以便查找、管理和使用这些对象。这个拥有层次结构的数据库，就是活动目录数据库，简称AD库。</p>
+<p>​        而实现域环境，就是要安装AD，而安装了AD的计算机，就变成了DC（用于存储活动目录数据库的计算机）。</p>
+<h3 id="安全域的划分"><a href="#安全域的划分" class="headerlink" title="安全域的划分"></a>安全域的划分</h3><p>​        划分安全域的目的是将一组安全等级相同的计算机划入同一个网段。这个网段内的计算机拥有相同的网络边界，并在网络边界上通过部署防火墙来实现对其他安全域的网络访问控制策略（NACL）。</p>
+<p>​        在一个用路由器连接的内网中，可以将网络划分为三个区域：安全级别最高的内网；安全级别中等的DMZ；安全级别最低的外网（Internet）。这三个区域负责完成不同的任务，因此需要设置不同的访问策略。</p>
+<p>​        DMZ称为隔离区，是为了解决安装防火墙之后外部网络不能访问内部网络服务器的问题而设立的一个非安全系统与安全系统之间的缓冲区。DMZ位于企业内部网络与外部网络之间。可以在DMZ中放置一些必须公开的服务器设施，例如企业Web服务器、FTP服务器等。DMZ是对外提供服务的区域，因此可以从外部访问。</p>
+<p>​        在网络边界上一般会部署防火墙及入侵检测、入侵防御产品等。如果有Web应用给，还会设置WAF，从而更加有效地保护内网。攻击者如果想要进入内网，首先要突破的就是这重重防御。</p>
+<p>​        在配置一个拥有DMZ的网络时，通常需要定义如下访问控制策略，以实现其屏障功能。</p>
+<ul>
+<li>内网可以访问外网</li>
+<li>内网可以访问DMZ</li>
+<li>外网不能访问内网</li>
+<li>外网可以访问DMZ</li>
+<li>DMZ不能访问内网</li>
+<li>DMZ不能访问外网</li>
+</ul>
+<p>​        内网有分为办公区和核心区</p>
+<ul>
+<li>办公区：员工日常的工作区，一般会安装防病毒软件、主机入侵检测产品等。办公区一般能够访问DMZ。如果运维人员也在办公区，那么部分主机也能访问核心数据区（很多大企业还会使用堡垒机来统一管理用户的登录行为）。攻击者如果想进入内网，一般会使用鱼叉攻击、水坑攻击，还有社会工程学手段。因为办公区人多且比较杂乱，在安全管理上可能存在许多漏洞，所有办公区一般是攻击者进入内网的重要途经之一。</li>
+<li>核心区：存储企业最重要的数据、文档等信息资产，通过日志记录、安全审计等安全措施进行严密的保护，往往只有少数的主机能够访问。从外部是很难直接访问到核心区的。一般来说，能够直接访问核心区的只有运维人员或者IT部门的主管，所以攻击者会重点关注这些用户的信息（攻击者在内网中进行横向移动攻击时，会优先查找这些主机）。</li>
+</ul>
+<h3 id="域中计算机分类"><a href="#域中计算机分类" class="headerlink" title="域中计算机分类"></a>域中计算机分类</h3><ul>
+<li><p>域控制器</p>
+<p>用于管理所有的网络访问，包括登录服务器、访问共享目录和资源。DC中存储了域内所有的账户和策略信息，包括安全策略、用户身份验证你信息和账户信息。</p>
+</li>
+<li><p>成员服务器</p>
+<p>指安装了服务器操作系统并加入了域、但没有安装活动目录的计算机，主要任务是提供网络资源。</p>
+</li>
+<li><p>客户机</p>
+<p>安装了其他操作系统的计算机，用户利用这些计算机和域中的账户可以登录域。</p>
+</li>
+<li><p>独立服务器</p>
+<p>独立服务器和域没有关系。如果服务器既不加入域，也不安装活动目录，就称其为独立服务器。</p>
+</li>
+</ul>
+<h3 id="域内权限解读"><a href="#域内权限解读" class="headerlink" title="域内权限解读"></a>域内权限解读</h3><p>​        域本地组来自全林，作用于本域。</p>
+<p>​        全局组来自本域，作用域全林。</p>
+<p>​        通用组来自全林，作用于全林。</p>
+]]></content>
+      <categories>
+        <category>内网渗透</category>
+      </categories>
+      <tags>
+        <tag>内网基础知识</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>使用ssh连接Linux虚拟机</title>
     <url>/2022/01/08/%E4%BD%BF%E7%94%A8ssh%E8%BF%9E%E6%8E%A5Linux%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
     <content><![CDATA[<h4 id="1-首先查看Linux虚拟机中是否安装了openssh-server"><a href="#1-首先查看Linux虚拟机中是否安装了openssh-server" class="headerlink" title="1 首先查看Linux虚拟机中是否安装了openssh-server"></a>1 首先查看Linux虚拟机中是否安装了openssh-server</h4><p>使用命令<code>ps -e | grep ssh</code><br>如果安装了，在进程列表会显示，ssh-agent sshd相关进程。  </p>
@@ -130,6 +239,57 @@
       <tags>
         <tag>Linux</tag>
         <tag>ssh</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>域环境搭建</title>
+    <url>/2022/01/23/%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<h1 id="域环境搭建"><a href="#域环境搭建" class="headerlink" title="域环境搭建"></a>域环境搭建</h1><p>首先要准备好三台虚拟机，让它们组成一个域。  </p>
+<p>DC：Win2008            DM：Win2003            DM：WinXp   </p>
+<h2 id="安装域控制器（win2008设置）"><a href="#安装域控制器（win2008设置）" class="headerlink" title="安装域控制器（win2008设置）"></a>安装域控制器（win2008设置）</h2><ol>
+<li><p>设置固定ip</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C1.png" alt="1"></p>
+<p>域控的ip必须是静态的，不用设置网关，且首先DNS服务器设置本机的ip地址。</p>
+</li>
+<li><p>安装域</p>
+<p>命令行输入dcpromo就会弹出一个安装Active Directory域服务的页面</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C2.png" alt="2"></p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C3.png" alt="3"></p>
+<p>在新林中新建域</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C4.png" alt="4"></p>
+<p>在下一步中输入目录林根级域的完全限定的域名，林功能级别选择默认，域功能级别选择默认。</p>
+<p>然后安装DNS服务器（必须安装）。文件夹不用修改，默认就好。然后设置目录还原模式的管理员密码，重启系统。</p>
+</li>
+</ol>
+<h2 id="设置win2003和Xp"><a href="#设置win2003和Xp" class="headerlink" title="设置win2003和Xp"></a>设置win2003和Xp</h2><p>将win2003的ip地址设为跟win2008同一网段，然后DNS服务器设为win2008的ip地址</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C5.png" alt="5"></p>
+<p>将xp的IP地址设为跟win2008同一网段，然后DNS服务器设为win2008的ip地址</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C6.png" alt="6"></p>
+<p>更改win2003的域</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C7.png" alt="7"></p>
+<p>更改xp的域</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C8.png" alt="8"></p>
+<p>这样就将win2003和xp都放到contoso.comzhege域里了。</p>
+<h2 id="域常用设置"><a href="#域常用设置" class="headerlink" title="域常用设置"></a>域常用设置</h2><p>点击开始旁边的服务器管理→角色→AD域服务→AD用户和计算机→contoso.com→右键contoso.com箭头新建组织单位company→右键company新建one、two、three三个组织单元</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C9.png" alt="9"></p>
+<p>然后分别在这三个组织单元里创建用户people1、people2、people3，（选择用户不能更改密码）</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C10.png" alt="10"></p>
+<p>到这里域设置就完成了，现在可以进行验证域下的用户是否都能够访问域。</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C11.png" alt="11"></p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C12.png" alt="12"></p>
+<p>经测试，三个用户都能够访问域内xp、win2003。  </p>
+<p>接下来要设置特定用户只能访问特定主机。</p>
+<p>people1只能访问win2003</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C13.png" alt="13"></p>
+<p>people2只能访问xp</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C14.png" alt="14"></p>
+<p>people3可以访问所有计算机</p>
+]]></content>
+      <categories>
+        <category>内网渗透</category>
+      </categories>
+      <tags>
+        <tag>域环境</tag>
       </tags>
   </entry>
 </search>
