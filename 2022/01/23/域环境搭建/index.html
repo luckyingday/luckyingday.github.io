@@ -22,12 +22,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="域环境搭建首先要准备好三台虚拟机，让它们组成一个域。">
+  <meta name="description" content="域环境搭建首先要准备好三台虚拟机，让它们组成一个域。   DC：Win2008            DM：Win2003            DM：WinXp    安装域控制器（win2008设置） 设置固定ip  域控的ip必须是静态的，不用设置网关，且首先DNS服务器设置本机的ip地址。  安装域 命令行输入dcpromo就会弹出一个安装Active Directory域服务的页面">
 <meta property="og:type" content="article">
 <meta property="og:title" content="域环境搭建">
 <meta property="og:url" content="http://example.com/2022/01/23/%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
 <meta property="og:site_name" content="InfoSec">
-<meta property="og:description" content="域环境搭建首先要准备好三台虚拟机，让它们组成一个域。">
+<meta property="og:description" content="域环境搭建首先要准备好三台虚拟机，让它们组成一个域。   DC：Win2008            DM：Win2003            DM：WinXp    安装域控制器（win2008设置） 设置固定ip  域控的ip必须是静态的，不用设置网关，且首先DNS服务器设置本机的ip地址。  安装域 命令行输入dcpromo就会弹出一个安装Active Directory域服务的页面">
 <meta property="og:locale">
 <meta property="og:image" content="http://example.com/2022/01/23/%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C1.png">
 <meta property="og:image" content="http://example.com/2022/01/23/%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C2.png">
@@ -325,7 +325,10 @@
     <a href="/2022/01/22/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80/" rel="prev" title="内网渗透测试基础">
       <i class="fa fa-chevron-left"></i> 内网渗透测试基础
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/01/28/windows%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E5%A4%9A%E4%B8%AAJava%E7%89%88%E6%9C%AC/" rel="next" title="windows环境配置多个Java版本">
+      windows环境配置多个Java版本 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -400,20 +403,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -453,12 +456,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">10k</span>
+    <span title="站点总字数">17k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">9 分钟</span>
+    <span title="站点阅读时长">16 分钟</span>
 </div>
 
         

@@ -1,23 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>LanGrayOA漏洞发现与利用</title>
-    <url>/2022/01/19/LanGrayOA%E6%BC%8F%E6%B4%9E%E5%8F%91%E7%8E%B0%E4%B8%8E%E5%88%A9%E7%94%A8/</url>
-    <content><![CDATA[<p>蓝凌OA国内使用的一款OA产品，历史上主要有出现过几个漏洞，主要是任意文件读取的漏洞，然后基于任意文件读取可以获得密钥，然后解密后进入后台，后台有一些上传，注入等问题。<br>寻找蓝凌OA方法：body中包含：“sys/ui/extend/theme/default/style/”或者关键词“蓝凌软件”  </p>
-<h3 id="任意文件读取（landray-oa-fileread-yaml）"><a href="#任意文件读取（landray-oa-fileread-yaml）" class="headerlink" title="任意文件读取（landray-oa-fileread.yaml）"></a>任意文件读取（landray-oa-fileread.yaml）</h3><p>Nuclei：扫描工具，基于模块来跨目标发送请求，可以对已知路径有效的扫描，主要用在网络侦查的初始阶段，比较好用的一个地方是，在被WAF后还可以自动重传。<br>1 下载地址：<a href="https://github.com/projectdiscovery/neclei">https://github.com/projectdiscovery/neclei</a><br>2 更新下载模板：<a href="https://github.com/projectdiscovery/nulei-templates">https://github.com/projectdiscovery/nulei-templates</a>  </p>
-<p>使用nuclei的poc：landray-oa-fileread.yaml,检测其漏洞：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nuclei.exe -t nuclei-templates\vulnerabilities\other\landray-oa-fileread.yaml -l target\landrayoa.txt -o results\landrayoa-fileread.txt</span><br></pre></td></tr></table></figure>
+    <title>Linux挖矿程序处理</title>
+    <url>/2022/02/09/Linux%E6%8C%96%E7%9F%BF%E7%A8%8B%E5%BA%8F%E5%A4%84%E7%90%86/</url>
+    <content><![CDATA[<h2 id="Linux挖矿程序处理"><a href="#Linux挖矿程序处理" class="headerlink" title="Linux挖矿程序处理"></a>Linux挖矿程序处理</h2><h3 id="挖矿程序发现"><a href="#挖矿程序发现" class="headerlink" title="挖矿程序发现"></a>挖矿程序发现</h3><p>使用<code>top</code>命令查看目前正在运行的进程，一般来说占用cpu资源特别多的进程，就有问题。</p>
+<p>使用<code>top</code>命令得出进程号（PID）</p>
+<h3 id="定位挖矿程序"><a href="#定位挖矿程序" class="headerlink" title="定位挖矿程序"></a>定位挖矿程序</h3><p>使用<code>ps</code>命令查看到挖矿程序运行的路径</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ps -aux | grep biden1  </span><br></pre></td></tr></table></figure>
 
-<p>检测到存在漏洞的url会保存在results文件夹的landrayoa-fileread.txt中。  </p>
-<h3 id="找个存在漏洞的url进行复现"><a href="#找个存在漏洞的url进行复现" class="headerlink" title="找个存在漏洞的url进行复现"></a>找个存在漏洞的url进行复现</h3><p><img src="F:\GitHub\blog\source_posts\LanGrayOA漏洞发现与利用\1.png" alt="image-20220120111917616"></p>
-<p>注：提交方式应该改为POST   </p>
-<p>从这里可以看出这个网站可以存在任意文件读取漏洞  </p>
+<p><img src="C:\Github\blog\source_posts\Linux挖矿程序处理\1.png" alt="1"></p>
+<p>然后使用<code>kill -9 id</code>能够杀掉相关进程。</p>
+<h2 id="定时任务添加检查脚本"><a href="#定时任务添加检查脚本" class="headerlink" title="定时任务添加检查脚本"></a>定时任务添加检查脚本</h2><p>排查过程中，挖矿进程占用资源过多，导致无法正常进行排查。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#! /bin/sh</span><br><span class="line">name=&quot;filename&quot;</span><br><span class="line">ps -efww | grep -w &quot;$name&quot; | grep -v grep | cut -c 9-15 |xargs kill -9 || exit 0</span><br></pre></td></tr></table></figure>
+
+<p>将脚本保存到check.sh中，再在crontab中添加定时任务，执行crontab -e，一分钟检查一次进程。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">* * * * * /root/check.sh</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="网络漏洞排查"><a href="#网络漏洞排查" class="headerlink" title="网络漏洞排查"></a>网络漏洞排查</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">netstat -anp</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="查看定时任务"><a href="#查看定时任务" class="headerlink" title="查看定时任务"></a>查看定时任务</h3><p>使用<code>crontab -l</code>显示crontab文件</p>
+<p>使用<code>crontab -e</code>修改crontab文件</p>
+<p>进入<code>/var/spool/cron</code>目录，查看是否有其他可以的定时任务</p>
+<p><code>tailf /var/log/cron</code>命令查看定时任务启动日志，查看有无相关任务信息</p>
+<p>删除相关进程文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">rm -rf biden1 </span><br></pre></td></tr></table></figure>
+
+<p>如果没权限删除，可以进程下面步骤</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">lsattr filename //查看文件属性</span><br><span class="line">chattr -i filename //修改文件属性</span><br></pre></td></tr></table></figure>
+
+<p>再进行删除</p>
+<p>到这一步还没有结束，还要注意该文件是否会重新创建。如果重新创建说明还有守护进程在执行。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li>使用rm命令无法删除，应该是使用chattr命令将文件锁定了。</li>
+</ol>
+<p>​    使用命令：chattr -i filename 即可正常删除</p>
+<ol start="2">
+<li>查看是否还有守护进程文件</li>
+<li>检查是否还有免密登录的后门文件/root/.ssh/authorized_keys</li>
+<li>检查定时任务crontab -l 将可疑任务清除。重启服务器，检查是否还有异常</li>
+</ol>
 ]]></content>
       <categories>
-        <category>漏洞复现</category>
+        <category>应急响应</category>
       </categories>
       <tags>
-        <tag>任意文件读取</tag>
+        <tag>挖矿木马</tag>
       </tags>
   </entry>
   <entry>
@@ -31,6 +62,21 @@
       </categories>
       <tags>
         <tag>Linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>sql注入面试题</title>
+    <url>/2022/01/05/sql%E6%B3%A8%E5%85%A5%E9%9D%A2%E8%AF%95%E9%A2%98/</url>
+    <content><![CDATA[<h2 id="0x01-sql注入类型，绕过及防御"><a href="#0x01-sql注入类型，绕过及防御" class="headerlink" title="0x01 sql注入类型，绕过及防御"></a>0x01 sql注入类型，绕过及防御</h2><h3 id="1-sql注入类型"><a href="#1-sql注入类型" class="headerlink" title="1 sql注入类型"></a>1 sql注入类型</h3><p>联合注入 （union）<br>报错注入 （xpath语法错误导致，主要利用extractvalue和updatexml两个函数）<br>布尔注入 (?id =1’ and 1=1  ?id=1’ and 1=2判断注入点与延时注入类似，利用猜测的方法)<br>延时注入 （sleep()函数，用length(),substr(),ascii(),if()等来进行判断数据库内容)<br>二次注入 （未正确过滤数据，攻击者构造的恶意数据存储在数据库中，注册账户admin’–）<br>堆叠注入 (mysql_multi_query(),可支持多个sql语句同时执行，用；进行分隔）<br>头部注入 （更改请求头部信息，前提是请求头部也可以向数据库发送查询信息）<br>宽字节注入 （GBK占用2字节，ASCII占用1字节，addslashes()）  </p>
+<h3 id="2-绕过方法"><a href="#2-绕过方法" class="headerlink" title="2 绕过方法"></a>2 绕过方法</h3><p>双写关键字 （select改为seleselectct）<br>替换关键字 ( and = &amp;&amp;   or = || &emsp;  xor = | &emsp; not = !  等于号可以改成like  &lt;&gt; 等价于 !=<br>大小写 （如：select改为Select）<br>使用注释符（–  #  /*  */）<br>特殊编码 （十六进制   ascii编码 ）<br>空格过滤绕过（ /*  */   两个空格  tap  `  回车 ()）  </p>
+<h3 id="3-防御方法"><a href="#3-防御方法" class="headerlink" title="3 防御方法"></a>3 防御方法</h3><p>过滤关键字，空格注释符等，<br>使用转义<br>设置数据库权限，使其只能查询不能更新和写入<br>限制查询长度<br>限制查询类型   </p>
+]]></content>
+      <categories>
+        <category>web安全</category>
+        <category>面试</category>
+      </categories>
+      <tags>
+        <tag>sql注入</tag>
       </tags>
   </entry>
   <entry>
@@ -81,30 +127,6 @@
       </tags>
   </entry>
   <entry>
-    <title>windows下ruby的下载与gem安装</title>
-    <url>/2022/01/06/windows%E4%B8%8Bruby%E7%9A%84%E4%B8%8B%E8%BD%BD%E4%B8%8Egem%E5%AE%89%E8%A3%85/</url>
-    <content><![CDATA[<p>主要讲述ruby的下载和gem的安装。</p>
-<h2 id="ruby的安装"><a href="#ruby的安装" class="headerlink" title="ruby的安装"></a>ruby的安装</h2><p>ruby的版本可以通过<a href="https://rubyinstaller.org/downloads/">https://rubyinstaller.org/downloads/</a><br>进入网站下载。下载ruby安装包之后直接点击进行安装就可以。<br>查看版本：cmd中输入<code>buby -version</code>  可以查看buby版本，就代表ruby安装成功了。  </p>
-<h2 id="gem的更新"><a href="#gem的更新" class="headerlink" title="gem的更新"></a>gem的更新</h2><p>输入<code>gem -v</code>可以查看当前gem的版本<br>为了进一步安装需要的ruby包，需要升级gem本身，这里使用update命令进行gem的升级<br><code>gem update --system</code><br>之后就可以使用gem安装其它的ruby 包。比如：安装activemodel 5.0.0.1包<br><code>gem install activemodel --version=5.0.0.1</code>  </p>
-<h2 id="Ruby-Gem命令详解"><a href="#Ruby-Gem命令详解" class="headerlink" title="Ruby Gem命令详解"></a>Ruby Gem命令详解</h2><p>更新gem自身：<code>gem update --system</code>  </p>
-<p>从gem源安装gem包： <code>gem install [gemname]</code>  </p>
-<p>从本机安装gem包：<code>gem install -l [gemname].gem</code>  </p>
-<p>安装指定版本的gem包：<code>gem install [gemname] --version=[ver]</code>  </p>
-<p>更新所有已安装的gem包：<code>gem update</code>  </p>
-<p>更新指定的gem包：<code>gem update [gemname]</code>  </p>
-<p>删除指定的gem包（注意此命令将删除改gem包已安装的所有版本）：<code>gem uninstall [gemname]</code>  </p>
-<p>删除某指定版本gem：<code>gem uninstall [gemname] --version=[ver]</code>  </p>
-<p>查看本机已经安装的所有gem包： <code>gem list</code>  </p>
-]]></content>
-      <categories>
-        <category>buby</category>
-        <category>blog</category>
-      </categories>
-      <tags>
-        <tag>ruby</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>windows中为cmd设置代理</title>
     <url>/2022/01/06/windows%E4%B8%AD%E4%B8%BAcmd%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86/</url>
     <content><![CDATA[<p>在CMD环境下设置代理可能不是很常用，但是某些情况下还是可能会用到，比如有些资源网站被墙了，此时你如果想访问这些资源时，只能通过代理来访问相应的资源，而你需要在CMD环境下下载墙外的资源时。当然，如果你使用某些代理软件为所有通讯设置了代理，那就不需要这些设置了。    </p>
@@ -121,18 +143,163 @@
       </tags>
   </entry>
   <entry>
-    <title>sql注入面试题</title>
-    <url>/2022/01/05/sql%E6%B3%A8%E5%85%A5%E9%9D%A2%E8%AF%95%E9%A2%98/</url>
-    <content><![CDATA[<h2 id="0x01-sql注入类型，绕过及防御"><a href="#0x01-sql注入类型，绕过及防御" class="headerlink" title="0x01 sql注入类型，绕过及防御"></a>0x01 sql注入类型，绕过及防御</h2><h3 id="1-sql注入类型"><a href="#1-sql注入类型" class="headerlink" title="1 sql注入类型"></a>1 sql注入类型</h3><p>联合注入 （union）<br>报错注入 （xpath语法错误导致，主要利用extractvalue和updatexml两个函数）<br>布尔注入 (?id =1’ and 1=1  ?id=1’ and 1=2判断注入点与延时注入类似，利用猜测的方法)<br>延时注入 （sleep()函数，用length(),substr(),ascii(),if()等来进行判断数据库内容)<br>二次注入 （未正确过滤数据，攻击者构造的恶意数据存储在数据库中，注册账户admin’–）<br>堆叠注入 (mysql_multi_query(),可支持多个sql语句同时执行，用；进行分隔）<br>头部注入 （更改请求头部信息，前提是请求头部也可以向数据库发送查询信息）<br>宽字节注入 （GBK占用2字节，ASCII占用1字节，addslashes()）  </p>
-<h3 id="2-绕过方法"><a href="#2-绕过方法" class="headerlink" title="2 绕过方法"></a>2 绕过方法</h3><p>双写关键字 （select改为seleselectct）<br>替换关键字 ( and = &amp;&amp;   or = || &emsp;  xor = | &emsp; not = !  等于号可以改成like  &lt;&gt; 等价于 !=<br>大小写 （如：select改为Select）<br>使用注释符（–  #  /*  */）<br>特殊编码 （十六进制   ascii编码 ）<br>空格过滤绕过（ /*  */   两个空格  tap  `  回车 ()）  </p>
-<h3 id="3-防御方法"><a href="#3-防御方法" class="headerlink" title="3 防御方法"></a>3 防御方法</h3><p>过滤关键字，空格注释符等，<br>使用转义<br>设置数据库权限，使其只能查询不能更新和写入<br>限制查询长度<br>限制查询类型   </p>
+    <title>LanGrayOA漏洞发现与利用</title>
+    <url>/2022/01/19/LanGrayOA%E6%BC%8F%E6%B4%9E%E5%8F%91%E7%8E%B0%E4%B8%8E%E5%88%A9%E7%94%A8/</url>
+    <content><![CDATA[<p>蓝凌OA国内使用的一款OA产品，历史上主要有出现过几个漏洞，主要是任意文件读取的漏洞，然后基于任意文件读取可以获得密钥，然后解密后进入后台，后台有一些上传，注入等问题。<br>寻找蓝凌OA方法：body中包含：“sys/ui/extend/theme/default/style/”或者关键词“蓝凌软件”  </p>
+<h3 id="任意文件读取（landray-oa-fileread-yaml）"><a href="#任意文件读取（landray-oa-fileread-yaml）" class="headerlink" title="任意文件读取（landray-oa-fileread.yaml）"></a>任意文件读取（landray-oa-fileread.yaml）</h3><p>Nuclei：扫描工具，基于模块来跨目标发送请求，可以对已知路径有效的扫描，主要用在网络侦查的初始阶段，比较好用的一个地方是，在被WAF后还可以自动重传。<br>1 下载地址：<a href="https://github.com/projectdiscovery/neclei">https://github.com/projectdiscovery/neclei</a><br>2 更新下载模板：<a href="https://github.com/projectdiscovery/nulei-templates">https://github.com/projectdiscovery/nulei-templates</a>  </p>
+<p>使用nuclei的poc：landray-oa-fileread.yaml,检测其漏洞：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">nuclei.exe -t nuclei-templates\vulnerabilities\other\landray-oa-fileread.yaml -l target\landrayoa.txt -o results\landrayoa-fileread.txt</span><br></pre></td></tr></table></figure>
+
+<p>检测到存在漏洞的url会保存在results文件夹的landrayoa-fileread.txt中。  </p>
+<h3 id="找个存在漏洞的url进行复现"><a href="#找个存在漏洞的url进行复现" class="headerlink" title="找个存在漏洞的url进行复现"></a>找个存在漏洞的url进行复现</h3><p><img src="F:\GitHub\blog\source_posts\LanGrayOA漏洞发现与利用\1.png" alt="image-20220120111917616"></p>
+<p>注：提交方式应该改为POST   </p>
+<p>从这里可以看出这个网站可以存在任意文件读取漏洞  </p>
 ]]></content>
       <categories>
-        <category>web安全</category>
-        <category>面试</category>
+        <category>漏洞复现</category>
       </categories>
       <tags>
-        <tag>sql注入</tag>
+        <tag>任意文件读取</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>windows下ruby的下载与gem安装</title>
+    <url>/2022/01/06/windows%E4%B8%8Bruby%E7%9A%84%E4%B8%8B%E8%BD%BD%E4%B8%8Egem%E5%AE%89%E8%A3%85/</url>
+    <content><![CDATA[<p>主要讲述ruby的下载和gem的安装。</p>
+<h2 id="ruby的安装"><a href="#ruby的安装" class="headerlink" title="ruby的安装"></a>ruby的安装</h2><p>ruby的版本可以通过<a href="https://rubyinstaller.org/downloads/">https://rubyinstaller.org/downloads/</a><br>进入网站下载。下载ruby安装包之后直接点击进行安装就可以。<br>查看版本：cmd中输入<code>buby -version</code>  可以查看buby版本，就代表ruby安装成功了。  </p>
+<h2 id="gem的更新"><a href="#gem的更新" class="headerlink" title="gem的更新"></a>gem的更新</h2><p>输入<code>gem -v</code>可以查看当前gem的版本<br>为了进一步安装需要的ruby包，需要升级gem本身，这里使用update命令进行gem的升级<br><code>gem update --system</code><br>之后就可以使用gem安装其它的ruby 包。比如：安装activemodel 5.0.0.1包<br><code>gem install activemodel --version=5.0.0.1</code>  </p>
+<h2 id="Ruby-Gem命令详解"><a href="#Ruby-Gem命令详解" class="headerlink" title="Ruby Gem命令详解"></a>Ruby Gem命令详解</h2><p>更新gem自身：<code>gem update --system</code>  </p>
+<p>从gem源安装gem包： <code>gem install [gemname]</code>  </p>
+<p>从本机安装gem包：<code>gem install -l [gemname].gem</code>  </p>
+<p>安装指定版本的gem包：<code>gem install [gemname] --version=[ver]</code>  </p>
+<p>更新所有已安装的gem包：<code>gem update</code>  </p>
+<p>更新指定的gem包：<code>gem update [gemname]</code>  </p>
+<p>删除指定的gem包（注意此命令将删除改gem包已安装的所有版本）：<code>gem uninstall [gemname]</code>  </p>
+<p>删除某指定版本gem：<code>gem uninstall [gemname] --version=[ver]</code>  </p>
+<p>查看本机已经安装的所有gem包： <code>gem list</code>  </p>
+]]></content>
+      <categories>
+        <category>ruby</category>
+        <category>blog</category>
+      </categories>
+      <tags>
+        <tag>ruby</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用ssh连接Linux虚拟机</title>
+    <url>/2022/01/08/%E4%BD%BF%E7%94%A8ssh%E8%BF%9E%E6%8E%A5Linux%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
+    <content><![CDATA[<h4 id="1-首先查看Linux虚拟机中是否安装了openssh-server"><a href="#1-首先查看Linux虚拟机中是否安装了openssh-server" class="headerlink" title="1 首先查看Linux虚拟机中是否安装了openssh-server"></a>1 首先查看Linux虚拟机中是否安装了openssh-server</h4><p>使用命令<code>ps -e | grep ssh</code><br>如果安装了，在进程列表会显示，ssh-agent sshd相关进程。  </p>
+<h4 id="2-如果没有安装，则执行以下步骤进行安装"><a href="#2-如果没有安装，则执行以下步骤进行安装" class="headerlink" title="2 如果没有安装，则执行以下步骤进行安装"></a>2 如果没有安装，则执行以下步骤进行安装</h4><p>执行<code>sudo apt-get update</code><br>在执行<code>sudo apt-get install openssh-server</code><br>如果报依赖关系错误既openssh-client版本问题，则执行<code>sudo apt-get install openssh-client=版本号</code><br>在执行<code>sudo apt-get install openssh-server</code>即可完成安装  </p>
+<h4 id="3-确认虚拟机已经启动ssh"><a href="#3-确认虚拟机已经启动ssh" class="headerlink" title="3 确认虚拟机已经启动ssh"></a>3 确认虚拟机已经启动ssh</h4><p>终端输入<code>suso service ssh start</code>启动ssh<br>输入<code>ifconfig</code>查看虚拟机ip  </p>
+<h4 id="4-然后打开ssh连接软件（如xshell）进行连接"><a href="#4-然后打开ssh连接软件（如xshell）进行连接" class="headerlink" title="4 然后打开ssh连接软件（如xshell）进行连接"></a>4 然后打开ssh连接软件（如xshell）进行连接</h4><p>打开xshell，新建会话<br>在连接选项中输入主机字段为刚刚查看的虚拟机的ip，端口号默认为22端口。<br>然后选择用户身份验证字段，输入用户名和密码，点击连接即可。  </p>
+<h4 id="5-解决ssh服务拒绝了密码，但密码是正确的"><a href="#5-解决ssh服务拒绝了密码，但密码是正确的" class="headerlink" title="5 解决ssh服务拒绝了密码，但密码是正确的"></a>5 解决ssh服务拒绝了密码，但密码是正确的</h4><p>1 终端输入<code>vim /etc/ssh/sshd_config</code><br>2 从里面找到<code>#PermitRootLogin</code> 这一行，将其改为<code>PermitRootLogin yes</code><br>（注意：该语句前本来的#号要去掉才会生效。）<br>3 输入：wq，保存并退出<br>4 输入/etc/init.d/ssh restart 重启ssh服务<br>5 此时再使用xshell进行连接，就没问题了。</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>ssh</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>windows环境配置多个Java版本</title>
+    <url>/2022/01/28/windows%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E5%A4%9A%E4%B8%AAJava%E7%89%88%E6%9C%AC/</url>
+    <content><![CDATA[<h2 id="0x01下载安装包"><a href="#0x01下载安装包" class="headerlink" title="0x01下载安装包"></a>0x01下载安装包</h2><p>​        本次安装已Java8和Java17为例。Java8因为只提供exe的安装程序，所以只能下周再安装包。而Java17就下载压缩包就好。</p>
+<h2 id="0x02安装Java8"><a href="#0x02安装Java8" class="headerlink" title="0x02安装Java8"></a>0x02安装Java8</h2><p><strong>安装jdk</strong></p>
+<p>​        运行安装包进行安装即可。</p>
+<p><strong>安装jre</strong></p>
+<p>​        选择安装到与jdk同一目录，找起来比较方便。</p>
+<p><strong>配置环境变量</strong></p>
+<p>​        一共需要配置三项内容：JAVA_HOME、CLASSPATH和PATH。在<strong>系统变量</strong>中进行修改。</p>
+<p><strong>JAVA_HOME</strong>：</p>
+<p>​        变量名：JAVA_HOME</p>
+<p>​        变量值：选择刚才安装jdk的目录，默认为：<code>C:\Program Files\Java\jdk1.8.0_131</code></p>
+<p><strong>CLASSPATH</strong>：</p>
+<p>​        变量名：CLASSPATH</p>
+<p>​        变量值：<code>.;%JAVA_HOME%\lib\dt.jar;%JAVA_HOME%\lib\tools.jar;</code></p>
+<p><strong>PATH</strong>：</p>
+<p>​        双击进入编辑界面，然后点击右侧新建按钮，新建两条：</p>
+<p>​        <code>%JAVA_HOME%\bin</code></p>
+<p>​        <code>%JAVA_HOME%\jre\bin</code></p>
+<h2 id="0x03安装Java17"><a href="#0x03安装Java17" class="headerlink" title="0x03安装Java17"></a>0x03安装Java17</h2><p><strong>解压文件</strong></p>
+<p>​        先解压Java17的压缩包，建议把解压文件放到与Java8同一目录下。</p>
+<p><strong>文件配置</strong></p>
+<p>​        Java17已经没有jre这个文件夹了。如果需要，我们要输入一下命令。</p>
+<p>​        <code>bin\jlink.exe --module-path jmods --add-modules java.desktop --output jre</code></p>
+<p><strong>配置Java17环境</strong></p>
+<p>​        由于CLASSPATH和PATH刚才都已经配置过，现在只需要配置JAVA_HOME就可以了。</p>
+<p>系统变量中新建变量JAVA17_HOME</p>
+<p>​        变量名：JAVA17_HOME</p>
+<p>​        变量值：刚才防止Java17解压文件的目录，<code>C:\Program Files\Java\jdk-17.0.2</code></p>
+<p><strong>配置JAVA_HOME</strong></p>
+<p>​        刚才我们在java8配置的JAVA_HOME，改成JAVA8_HOME</p>
+<p>​        最后我们再重新创建一个变量JAVA_HOME</p>
+<p>​        变量名：<code>JAVA_HOME</code></p>
+<p>​        变量值：<code>%JAVAxx_HOME%</code></p>
+<p>​        当我们想要使用哪一个版本的Java，就把JAVAxx_HOME的xx改为需要的版本就可以了。</p>
+<p><strong>修改javapath</strong></p>
+<p>​        到上面一步还并没有完全实现，还需要进行最后一步修改。当我们把JAVA_HOME改成17后，进cmd查看Java版本还是Java8的。</p>
+<p>​        这是因为path中的第一行javapath的优先级高于后面我们设置的 JAVA_HOME的内容。而javapath是指向Java8的版本。所以我们要将我们添加的两行内容放到javapath那一行的上面就可以了。</p>
+]]></content>
+      <categories>
+        <category>环境配置</category>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>域环境搭建</title>
+    <url>/2022/01/23/%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
+    <content><![CDATA[<h1 id="域环境搭建"><a href="#域环境搭建" class="headerlink" title="域环境搭建"></a>域环境搭建</h1><p>首先要准备好三台虚拟机，让它们组成一个域。  </p>
+<p>DC：Win2008            DM：Win2003            DM：WinXp   </p>
+<h2 id="安装域控制器（win2008设置）"><a href="#安装域控制器（win2008设置）" class="headerlink" title="安装域控制器（win2008设置）"></a>安装域控制器（win2008设置）</h2><ol>
+<li><p>设置固定ip</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C1.png" alt="1"></p>
+<p>域控的ip必须是静态的，不用设置网关，且首先DNS服务器设置本机的ip地址。</p>
+</li>
+<li><p>安装域</p>
+<p>命令行输入dcpromo就会弹出一个安装Active Directory域服务的页面</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C2.png" alt="2"></p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C3.png" alt="3"></p>
+<p>在新林中新建域</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C4.png" alt="4"></p>
+<p>在下一步中输入目录林根级域的完全限定的域名，林功能级别选择默认，域功能级别选择默认。</p>
+<p>然后安装DNS服务器（必须安装）。文件夹不用修改，默认就好。然后设置目录还原模式的管理员密码，重启系统。</p>
+</li>
+</ol>
+<h2 id="设置win2003和Xp"><a href="#设置win2003和Xp" class="headerlink" title="设置win2003和Xp"></a>设置win2003和Xp</h2><p>将win2003的ip地址设为跟win2008同一网段，然后DNS服务器设为win2008的ip地址</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C5.png" alt="5"></p>
+<p>将xp的IP地址设为跟win2008同一网段，然后DNS服务器设为win2008的ip地址</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C6.png" alt="6"></p>
+<p>更改win2003的域</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C7.png" alt="7"></p>
+<p>更改xp的域</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C8.png" alt="8"></p>
+<p>这样就将win2003和xp都放到contoso.comzhege域里了。</p>
+<h2 id="域常用设置"><a href="#域常用设置" class="headerlink" title="域常用设置"></a>域常用设置</h2><p>点击开始旁边的服务器管理→角色→AD域服务→AD用户和计算机→contoso.com→右键contoso.com箭头新建组织单位company→右键company新建one、two、three三个组织单元</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C9.png" alt="9"></p>
+<p>然后分别在这三个组织单元里创建用户people1、people2、people3，（选择用户不能更改密码）</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C10.png" alt="10"></p>
+<p>到这里域设置就完成了，现在可以进行验证域下的用户是否都能够访问域。</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C11.png" alt="11"></p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C12.png" alt="12"></p>
+<p>经测试，三个用户都能够访问域内xp、win2003。  </p>
+<p>接下来要设置特定用户只能访问特定主机。</p>
+<p>people1只能访问win2003</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C13.png" alt="13"></p>
+<p>people2只能访问xp</p>
+<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C14.png" alt="14"></p>
+<p>people3可以访问所有计算机</p>
+]]></content>
+      <categories>
+        <category>内网渗透</category>
+      </categories>
+      <tags>
+        <tag>域环境</tag>
       </tags>
   </entry>
   <entry>
@@ -225,71 +392,294 @@
       </tags>
   </entry>
   <entry>
-    <title>使用ssh连接Linux虚拟机</title>
-    <url>/2022/01/08/%E4%BD%BF%E7%94%A8ssh%E8%BF%9E%E6%8E%A5Linux%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
-    <content><![CDATA[<h4 id="1-首先查看Linux虚拟机中是否安装了openssh-server"><a href="#1-首先查看Linux虚拟机中是否安装了openssh-server" class="headerlink" title="1 首先查看Linux虚拟机中是否安装了openssh-server"></a>1 首先查看Linux虚拟机中是否安装了openssh-server</h4><p>使用命令<code>ps -e | grep ssh</code><br>如果安装了，在进程列表会显示，ssh-agent sshd相关进程。  </p>
-<h4 id="2-如果没有安装，则执行以下步骤进行安装"><a href="#2-如果没有安装，则执行以下步骤进行安装" class="headerlink" title="2 如果没有安装，则执行以下步骤进行安装"></a>2 如果没有安装，则执行以下步骤进行安装</h4><p>执行<code>sudo apt-get update</code><br>在执行<code>sudo apt-get install openssh-server</code><br>如果报依赖关系错误既openssh-client版本问题，则执行<code>sudo apt-get install openssh-client=版本号</code><br>在执行<code>sudo apt-get install openssh-server</code>即可完成安装  </p>
-<h4 id="3-确认虚拟机已经启动ssh"><a href="#3-确认虚拟机已经启动ssh" class="headerlink" title="3 确认虚拟机已经启动ssh"></a>3 确认虚拟机已经启动ssh</h4><p>终端输入<code>suso service ssh start</code>启动ssh<br>输入<code>ifconfig</code>查看虚拟机ip  </p>
-<h4 id="4-然后打开ssh连接软件（如xshell）进行连接"><a href="#4-然后打开ssh连接软件（如xshell）进行连接" class="headerlink" title="4 然后打开ssh连接软件（如xshell）进行连接"></a>4 然后打开ssh连接软件（如xshell）进行连接</h4><p>打开xshell，新建会话<br>在连接选项中输入主机字段为刚刚查看的虚拟机的ip，端口号默认为22端口。<br>然后选择用户身份验证字段，输入用户名和密码，点击连接即可。  </p>
-<h4 id="5-解决ssh服务拒绝了密码，但密码是正确的"><a href="#5-解决ssh服务拒绝了密码，但密码是正确的" class="headerlink" title="5 解决ssh服务拒绝了密码，但密码是正确的"></a>5 解决ssh服务拒绝了密码，但密码是正确的</h4><p>1 终端输入<code>vim /etc/ssh/sshd_config</code><br>2 从里面找到<code>#PermitRootLogin</code> 这一行，将其改为<code>PermitRootLogin yes</code><br>（注意：该语句前本来的#号要去掉才会生效。）<br>3 输入：wq，保存并退出<br>4 输入/etc/init.d/ssh restart 重启ssh服务<br>5 此时再使用xshell进行连接，就没问题了。</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>ssh</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>域环境搭建</title>
-    <url>/2022/01/23/%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</url>
-    <content><![CDATA[<h1 id="域环境搭建"><a href="#域环境搭建" class="headerlink" title="域环境搭建"></a>域环境搭建</h1><p>首先要准备好三台虚拟机，让它们组成一个域。  </p>
-<p>DC：Win2008            DM：Win2003            DM：WinXp   </p>
-<h2 id="安装域控制器（win2008设置）"><a href="#安装域控制器（win2008设置）" class="headerlink" title="安装域控制器（win2008设置）"></a>安装域控制器（win2008设置）</h2><ol>
-<li><p>设置固定ip</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C1.png" alt="1"></p>
-<p>域控的ip必须是静态的，不用设置网关，且首先DNS服务器设置本机的ip地址。</p>
+    <title></title>
+    <url>/2022/01/28/%E5%9F%9F%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/</url>
+    <content><![CDATA[<h1 id="域信息收集"><a href="#域信息收集" class="headerlink" title="域信息收集"></a>域信息收集</h1><h2 id="收集本机信息"><a href="#收集本机信息" class="headerlink" title="收集本机信息"></a>收集本机信息</h2><p>​        对于内网中的机器，其所处内网的结构是什么样的、其角色是什么、使用这台机器的人的角色是什么，以及这台机器上安装了什么杀毒软件、这台机器是通过什么方式上网的、这台机器是笔记本电脑还是台式机等问题，都需要通过信息收集来解答。</p>
+<h3 id="手动收集信息"><a href="#手动收集信息" class="headerlink" title="手动收集信息"></a>手动收集信息</h3><p>​        本机信息包括操作系统、权限、内网ip地制段、杀毒软件、端口、服务、补丁更新频率、网络连接、共享、会话等。如果是域内主机，操作系统 、应用软件、补丁、服务、杀毒软件一般都是批量安装。</p>
+<p>​        通过本机的相关信息，可以进一步了解整个域的操作系统版本、软件及补丁安装情况、用户命名方式等。</p>
+<ol>
+<li><p><strong>查询网络配置信息</strong></p>
+<p><code>ipconfig /all</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\1.png" alt="1"></p>
 </li>
-<li><p>安装域</p>
-<p>命令行输入dcpromo就会弹出一个安装Active Directory域服务的页面</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C2.png" alt="2"></p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C3.png" alt="3"></p>
-<p>在新林中新建域</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C4.png" alt="4"></p>
-<p>在下一步中输入目录林根级域的完全限定的域名，林功能级别选择默认，域功能级别选择默认。</p>
-<p>然后安装DNS服务器（必须安装）。文件夹不用修改，默认就好。然后设置目录还原模式的管理员密码，重启系统。</p>
+<li><p><strong>查询操作系统及软件的信息</strong></p>
+<p>（1） 查询操作系统和版本信息</p>
+<p>英文版操作系统：</p>
+<p><code>systeminfo | findstr /B /C:&quot;OS Name&quot; /C:&quot;OS Version&quot;</code></p>
+<p>中文版操作系统：</p>
+<p><code>systeminfo | findstr /B /C:&quot;OS 名称&quot; /C:&quot;OS 版本&quot;</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\2.png" alt="2"></p>
+<p>（2）查看系统体系结构</p>
+<p><code>echo %PROCESSOR_ARCHITECTURE%</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\3.png" alt="3"></p>
+<p>（3）查看安装的软件及版本、路径等</p>
+<p>利用wmic命令，将结果输出到文本文件中。</p>
+<p><code>wmic product get name,version</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\4.png" alt="4"></p>
+<p>还可以利用powershell命令，收集软件的版本信息。</p>
+<p><code>powershell &quot;Get-WmiObject -class Win32_Product | Select-Object -Property name,version&quot;</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\5.png" alt="5"></p>
+</li>
+<li><p>查询本机服务信息</p>
+<p><code>wmic service list brief</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\6.png" alt="6"></p>
+</li>
+<li><p>查询进程列表</p>
+<p>执行如下命令，可以查看当前进程列表和进程用户</p>
+<p><code>tasklist</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\7.png" alt="7"></p>
+<p>执行如下命令，可以查看进程信息</p>
+<p><code>wmic process list brief</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\8.png" alt="8"></p>
+<p><strong>常见杀毒软件的进程</strong></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\9.png" alt="9"></p>
+</li>
+<li><p>查看启动程序信息</p>
+<p><code>wmic startup get command ,captionn</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\10.png" alt="10"></p>
+</li>
+<li><p>查看计划任务</p>
+<p><code>schtasks /query /fo list /v</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\11.png" alt="11"></p>
+</li>
+<li><p>查看主机开机时间</p>
+<p><code>net statistics workstation</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\12.png" alt="12"></p>
+</li>
+<li><p>查询用户列表</p>
+<p><code>net user</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\13.png" alt="13"></p>
+<p>获取本地管理员信息</p>
+<p><code>net localgroup adminstrators</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\14.png" alt="14"></p>
+<p>查看当前在线用户</p>
+<p><code>query user || qwinsta</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\15.png" alt="15"></p>
+</li>
+<li><p>列出或断开本地计算机与所连接的客户端之间的会话</p>
+<p><code>net session</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\16.png" alt="16"></p>
+</li>
+<li><p>查询端口列表</p>
 </li>
 </ol>
-<h2 id="设置win2003和Xp"><a href="#设置win2003和Xp" class="headerlink" title="设置win2003和Xp"></a>设置win2003和Xp</h2><p>将win2003的ip地址设为跟win2008同一网段，然后DNS服务器设为win2008的ip地址</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C5.png" alt="5"></p>
-<p>将xp的IP地址设为跟win2008同一网段，然后DNS服务器设为win2008的ip地址</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C6.png" alt="6"></p>
-<p>更改win2003的域</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C7.png" alt="7"></p>
-<p>更改xp的域</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C8.png" alt="8"></p>
-<p>这样就将win2003和xp都放到contoso.comzhege域里了。</p>
-<h2 id="域常用设置"><a href="#域常用设置" class="headerlink" title="域常用设置"></a>域常用设置</h2><p>点击开始旁边的服务器管理→角色→AD域服务→AD用户和计算机→contoso.com→右键contoso.com箭头新建组织单位company→右键company新建one、two、three三个组织单元</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C9.png" alt="9"></p>
-<p>然后分别在这三个组织单元里创建用户people1、people2、people3，（选择用户不能更改密码）</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C10.png" alt="10"></p>
-<p>到这里域设置就完成了，现在可以进行验证域下的用户是否都能够访问域。</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C11.png" alt="11"></p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C12.png" alt="12"></p>
-<p>经测试，三个用户都能够访问域内xp、win2003。  </p>
-<p>接下来要设置特定用户只能访问特定主机。</p>
-<p>people1只能访问win2003</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C13.png" alt="13"></p>
-<p>people2只能访问xp</p>
-<p><img src="%E5%9F%9F%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%5C14.png" alt="14"></p>
-<p>people3可以访问所有计算机</p>
+<p>   <code>netstat -ano</code></p>
+<p>   <img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\17.png" alt="17"></p>
+<ol start="11">
+<li><p>查看补丁列表</p>
+<p><code>systeminfo</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\18.png" alt="18"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\19.png" alt="19"></p>
+<p>使用wmic 查看安装在系统中的补丁</p>
+<p><code>wmic qfe get Caption,Description,HotFixID,InstalledOn</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\20.png" alt="20"></p>
+</li>
+<li><p>查看本机共享列表</p>
+<p><code>net share</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\21.png" alt="21"></p>
+<p>利用wmic命令查找共享列表</p>
+<p><code>wmic share get name,path,status</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\22.png" alt="22"></p>
+</li>
+<li><p>查询路由表及所有可用接口的ARP缓存列表</p>
+<p><code>route print</code></p>
+<p><code>arp -a</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\23.png" alt="23"></p>
+</li>
+<li><p>查询防火墙相关配置</p>
+<p>（1）关闭防火墙</p>
+<p>win2003及之前的版本：<code>netsh firewall set opmode disable</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\24.png" alt="24"></p>
+<p>win2003之后的版本：<code>netsh advfirewall set allprofiles state off</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\25.png" alt="25"></p>
+<p>（2）查看防火墙配置</p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\26.png" alt="26"></p>
+<p>（3）修改防火墙配置</p>
+<p>win2003及之前的版本，允许指定程序全部连接</p>
+<p><code>netsh firewall add allowedprogram c:\nc.exe &quot;allow nc&quot; enable</code></p>
+<p>win2003之后的版本</p>
+<p>允许指定程序进入：<code>netsh advfirewall firewall add rule name=&quot;pass nc&quot; dir=in action=allow program=&quot;c:\nc.exe&quot;</code></p>
+<p>允许指定程序退出：<code>netsh advfirewall firewall add rule name=&quot;Allow nc&quot; dir=out action=allow program=&quot;c:\nc.exe&quot;</code></p>
+<p>允许3389端口开放：<code>netsh advfirewall firewall add rule name=&quot;Remote Desktop&quot; protocol=TCP dir=in localport=3389 action=allow</code></p>
+<p>（4）自定义防火墙的日志的存储位置</p>
+<p><code>netsh advfirewall set currentprofile logging filename &quot;C:\windows\temp\fw.log&quot;</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\27.png" alt="27"></p>
+</li>
+<li><p>查看代理配置情况</p>
+<p>执行如下命令，可以看到服务器127.0.0.1的1080端口的代理配置信息</p>
+<p><code>reg query &quot;HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings&quot;</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\28.png" alt="28"></p>
+</li>
+<li><p>查询并开启远程连接服务</p>
+<p>（1）查看远程连接端口</p>
+<p><code>reg query &quot;HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp&quot; /V PortNumber</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\29.png" alt="29"></p>
+<p>（2）在win2003中开启3389端口</p>
+<p><code>wmic path win32_terminalservicesetting where (__CLASS !=&quot;&quot;) call setallowtsconnections 1</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\30.png" alt="30"></p>
+<p>（3）在win2008和win2012中开启3389端口</p>
+<p><code>wmic /namespace:\\root\cimv2\terminalservices path win32_terminalservicesetting where (__CLASS !=&quot;&quot;) call setallowtsconnections 1</code></p>
+<p><code>wmic /namespace:\\root\cimv2\terminalservices path win32_tsgeneralsetting where (TerminalName=&#39;RDP-Tcp&#39;) call setuserauthenticationrequired 1</code></p>
+<p><code>reg add &quot;HKLM\SYSTEM\CURRENT\CONTROLSET\CONTROL\TERMINAL SERVER&quot; /V fSingleSessionPerUser /t REG_DWORD /d 0 /f</code></p>
+</li>
+</ol>
+<h3 id="自动收集信息"><a href="#自动收集信息" class="headerlink" title="自动收集信息"></a>自动收集信息</h3><p>​        为了简化操作，可以创建一个脚本，在目标机器上完成进程、服务、用户账号、用户组、网络接口、硬盘信息、网络共享信息、操作系统、安装的补丁、安装的软件、启动时运行的程序、时区等信息的查询工作。</p>
+<p>​        WMIC（Windows Management Instrumentation Command-Line，Windows管理工具命令行）是最有用的Windows命令行工具。默认情况下，win xp低权限用户不能访问WMIC，而win7以上版本低权限用户允许访问WMIC并执行相关查询操作。</p>
+<p>​    <img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\31.png" alt="31"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\32.png" alt="32"></p>
+<h3 id="Empire下的主机信息收集"><a href="#Empire下的主机信息收集" class="headerlink" title="Empire下的主机信息收集"></a>Empire下的主机信息收集</h3><p>​        Empire提供了用于收集主机信息的模板。输入命令<code>usemodule situational_awareness/host/winenum</code>，即可查看本机用户、域组成员、密码设置时间、剪贴板内容、系统基本信息、网络适配器信息、共享信息等。</p>
+<p>​        另外，situational_awareness/host/computerdetails模块及救护包括了系统中所有有用的信息，例如目标主机事件日志、应用程序控制策略日志，包括RDP登录信息、Power Shell脚本运行和保存的信息等。运行这个模板需要管理员权限。</p>
+<h2 id="查询当前权限"><a href="#查询当前权限" class="headerlink" title="查询当前权限"></a>查询当前权限</h2><ol>
+<li><p><strong>查看当前权限</strong></p>
+<p><code>whoami</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\33.png" alt="33"></p>
+</li>
+<li><p>获取域SID</p>
+<p><code>whoami /all</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\34.png" alt="34"></p>
+</li>
+<li><p>查询指定用户的详细信息</p>
+<p><code>net user XXX /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\35.png" alt="35"></p>
+</li>
+</ol>
+<h2 id="判断是否存在域"><a href="#判断是否存在域" class="headerlink" title="判断是否存在域"></a>判断是否存在域</h2><p>​        获得了本机相关信息，就要判断当前内网中是否存在域。如果当前内网中存在域，就需要判断所控主机是否在域内。</p>
+<ol>
+<li><p><strong>使用ipconfig命令</strong></p>
+<p><code>ipconfig /all</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\36.png" alt="36"></p>
+<p>通过查看网关IP地址、DNS的IP地址、域名、本机是否与DNS服务器在同一网段等信息。然后通过反向解析查询命令nslookup来解析域名的ip地址。用解析得到的ip地址进行对比。判断域控制器和DNS服务器是否在同一台服务器上。</p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\37.png" alt="37"></p>
+</li>
+<li><p><strong>查看系统详细信息</strong></p>
+<p><code>systeminfo</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\38.png" alt="38"></p>
+<p>域即域名，登录服务器即为域控制器。</p>
+</li>
+<li><p>查询当前登录域及登录用户信息</p>
+<p><code>net config workstation</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\39.png" alt="39"></p>
+<p>工作站域DNS名称即为域名，登录域用于表示当前登录的用户是域用户还是本地用户，当前登录的是本地用户。</p>
+</li>
+<li><p>判断主域</p>
+<p><code>net time /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\40.png" alt="40"></p>
+<p>本地用户会拒绝访问。</p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\41.png" alt="41"></p>
+<p>域用户显示当前时间。</p>
+</li>
+</ol>
+<h2 id="探测域内存活主机"><a href="#探测域内存活主机" class="headerlink" title="探测域内存活主机"></a>探测域内存活主机</h2><p>​        内网存活主机探测是内网渗透测试中不可或缺的一个环节。可在白天和晚上分别进行探测，以对比分析存活主机和对应的IP地址。</p>
+<h3 id="利用NetBIOS快速探测内网"><a href="#利用NetBIOS快速探测内网" class="headerlink" title="利用NetBIOS快速探测内网"></a>利用NetBIOS快速探测内网</h3><p>​        NetBIOS是局域网程序使用的一种应用程序编程接口（API），为程序提供请求低级别服务的统一的命令集，为局域网提供网络及其他特殊功能。</p>
+<p>​        nbtscan是一个命令行工具，用于扫描本地或远程TCP/IP网络上的开放NetBIOS名称服务器。</p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\42.png" alt="42"></p>
+<p>第一列为IP地址，第二列为机器名和所在域的名称，最后一列是机器所开启的服务的列表。</p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\43.png" alt="43"></p>
+<h3 id="利用ICMP协议快速探测内网"><a href="#利用ICMP协议快速探测内网" class="headerlink" title="利用ICMP协议快速探测内网"></a>利用ICMP协议快速探测内网</h3><p>​        以此对内网中的每个IP地址执行ping命令，可以快速找出内网中所有存活的主机。在渗透测试中，可以使用如下命令循环探测整个C段。</p>
+<p><code>for /L %I in (1,1,254) DO @ping -w 1 -n 1 192.168.124.%I | findstr &quot;TTL=&quot;</code></p>
+<h3 id="通过ARP扫描探测内网"><a href="#通过ARP扫描探测内网" class="headerlink" title="通过ARP扫描探测内网"></a>通过ARP扫描探测内网</h3><ol>
+<li><p><strong>arp-scan工具</strong></p>
+<p>把arp.exe上传到目标机器中并运行，可以自定义掩码、指定扫描范围等。</p>
+<p><code>arp.exe -t 192.168.124.0/24</code></p>
+</li>
+<li><p><strong>Empire中的arpscan模块</strong></p>
+<p>Empire中内置了arpscan模块。用于在局域网内发送ARP数据包、收集活跃主机的IP地址和MAC地址信息。</p>
+<p>在Empire中输入命令<code>usermodule situational_awareness/network/arpscan</code>，即可使用其内置arpscan模块。</p>
+</li>
+<li><p><strong>Nishang中的Invoke-ARPScan.ps1脚本</strong></p>
+</li>
+<li><p><strong>通过常规TCP/UDP端口扫描探测内网</strong></p>
+<p>ScanLine是一款经典的端口扫描工具，可以在所有版本的Windows操作系统中使用。</p>
+<p><code>scanline -h -t 22,80-90,110 -u 53,161 -O C:\windows\temp\log.txt -p 192.168.124.1-254</code></p>
+</li>
+</ol>
+<h2 id="扫描域内端口"><a href="#扫描域内端口" class="headerlink" title="扫描域内端口"></a>扫描域内端口</h2><p>​        通过查询目标主机的端口开放信息，不仅可以了解目标主机所开放的服务，还可以找出其开放服务的漏洞、分析目标网络的拓扑结构等，具体需要关注一下三点。</p>
+<p>​                端口的banner信息</p>
+<p>​                端口上运行的服务</p>
+<p>​                常见应用的默认端口</p>
+<p>​        在内网渗透中，通常使用Metasploit内置的端口进行扫描。也可以上传端口扫描工具进行扫描。在获得授权的情况下，可以直接使用Nmap、masscan等端口扫描工具获取开放的端口信息。</p>
+<h3 id="利用telnet命令进行扫描"><a href="#利用telnet命令进行扫描" class="headerlink" title="利用telnet命令进行扫描"></a>利用telnet命令进行扫描</h3><p>​        快速检测某台主机的某个常规高危端口是否开放。</p>
+<p>​        <code>telnet DC 22</code> </p>
+<h3 id="S扫描器"><a href="#S扫描器" class="headerlink" title="S扫描器"></a>S扫描器</h3><p>​        早期的一种快速端口扫描工具，支持大网段扫描。</p>
+<p>​        <code>S.exe TCP  192.168.124.100 192.168.124.101 445,3389 /Banner  /save</code></p>
+<h3 id="Metasploit端口扫描"><a href="#Metasploit端口扫描" class="headerlink" title="Metasploit端口扫描"></a>Metasploit端口扫描</h3><p>​        在msfconsole下，运行“search portscan”命令，即可进行搜索。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">use auxiliary/scanner/portscan/tcp</span><br><span class="line">show options</span><br><span class="line">set ports 1-1024</span><br><span class="line">set RHOSTS 192.168.124.101</span><br><span class="line">set THREADS 10</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+
+<h3 id="PowerSploit的involve-portscan-ps1脚本"><a href="#PowerSploit的involve-portscan-ps1脚本" class="headerlink" title="PowerSploit的involve-portscan.ps1脚本"></a>PowerSploit的involve-portscan.ps1脚本</h3><h3 id="Nishang的Involve-PortScan模块"><a href="#Nishang的Involve-PortScan模块" class="headerlink" title="Nishang的Involve-PortScan模块"></a>Nishang的Involve-PortScan模块</h3><h3 id="端口Banner信息"><a href="#端口Banner信息" class="headerlink" title="端口Banner信息"></a>端口Banner信息</h3><p>​        如果通过扫描发现了端口，可以使用客户端连接工具或者nc，获取服务端的Banner信息。然后在漏洞库中查找对应CVE编号的POC、EXP，在ExploitDB、Seebug等平台上查看相关的 漏洞利用工具，然后到目标系统上验证漏洞是否存在。</p>
+<p><strong>常见端口及说明</strong></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\44.png" alt="44"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\45.png" alt="45"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\46.png" alt="46"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\47.png" alt="47"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\48.png" alt="48"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\49.png" alt="49"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\50.png" alt="50"></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\51.png" alt="51"></p>
+<h2 id="收集域内基础信息"><a href="#收集域内基础信息" class="headerlink" title="收集域内基础信息"></a>收集域内基础信息</h2><ol>
+<li><p>查询域<code>net view /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\52.png" alt="52"></p>
+</li>
+<li><p>查询域内所有计算机<code>net view /domain:CONTOSO</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\53.png" alt="53"></p>
+</li>
+<li><p>查询域内所有用户组列表<code>net group /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\54.png" alt="54"></p>
+</li>
+<li><p>查询所有域成员计算机列表<code>net group &quot;domain computers&quot; /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\55.png" alt="55"></p>
+</li>
+<li><p>获取域密码信息<code>net accounts /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\56.png" alt="56"></p>
+</li>
+<li><p>获取域信任信息<code>nltest /domain_trusts</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\57.png" alt="57"></p>
+</li>
+</ol>
+<h2 id="查找域控制器"><a href="#查找域控制器" class="headerlink" title="查找域控制器"></a>查找域控制器</h2><ol>
+<li><p>查看域控制器的机器名<code>nltest /DCLIST:contoso</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\58.png" alt="58"></p>
+</li>
+<li><p>查看域控制器的主机名<code>Nslookup -type=SRV _ldap._tcp</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\59.png" alt="59"></p>
+</li>
+<li><p>查看当前时间<code>net time /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\60.png" alt="60"></p>
+</li>
+<li><p>查看域控制器组<code>net group &quot;Domain Controllers&quot; /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\61.png" alt="61"></p>
+</li>
+</ol>
+<h2 id="获取域内的用户和管理员信息"><a href="#获取域内的用户和管理员信息" class="headerlink" title="获取域内的用户和管理员信息"></a>获取域内的用户和管理员信息</h2><h3 id="查询所有域用户列表"><a href="#查询所有域用户列表" class="headerlink" title="查询所有域用户列表"></a>查询所有域用户列表</h3><ol>
+<li><p>向域控制器进行查询<code>net user /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\62.png" alt="62"></p>
+</li>
+<li><p>获取域内用户的详细信息 <code>wmic useraccount get /all</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\63.png" alt="63"></p>
+</li>
+<li><p>查看存在的用户<code>dsquery user</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\64.png" alt="64"></p>
+</li>
+<li><p>查询本地管理员组用户<code>net localgroup administrators</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\65.png" alt="65"></p>
+</li>
+</ol>
+<h3 id="查询域管理员用户组"><a href="#查询域管理员用户组" class="headerlink" title="查询域管理员用户组"></a>查询域管理员用户组</h3><ol>
+<li><p>查询域管理员用户<code>net group &quot;domain admins&quot;  /domain</code></p>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\66.png" alt="66"></p>
+</li>
+<li><p>查询管理员用户组<code>net group &quot;Enterprise Admins&quot; /domain</code></p>
+</li>
+</ol>
+<p><img src="C:\Users\lucky\Desktop\内网渗透\学习笔记\域信息收集\67.png" alt="67"></p>
+<h2 id="定位域管理员"><a href="#定位域管理员" class="headerlink" title="定位域管理员"></a>定位域管理员</h2><h3 id="域管理员定位概述"><a href="#域管理员定位概述" class="headerlink" title="域管理员定位概述"></a>域管理员定位概述</h3><p>​        定位域内管理员的常规渠道，一是日志，二是会话。日志指本地机器的管理员日志。会话指域内每台机器的登录会话。</p>
+<h3 id="常用域管理员定位工具"><a href="#常用域管理员定位工具" class="headerlink" title="常用域管理员定位工具"></a>常用域管理员定位工具</h3><ol>
+<li>psloggedon.exe</li>
+<li>PVEFindADUser.exe</li>
+<li>netview.exe</li>
+<li>Nmap的NSE脚本</li>
+<li>PowerView脚本</li>
+<li>Empire的user_hunter模块</li>
+</ol>
 ]]></content>
-      <categories>
-        <category>内网渗透</category>
-      </categories>
-      <tags>
-        <tag>域环境</tag>
-      </tags>
   </entry>
 </search>
