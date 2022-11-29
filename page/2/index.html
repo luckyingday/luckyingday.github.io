@@ -255,18 +255,14 @@
 
       
           <p>主要讲述ruby的下载和gem的安装。</p>
-<h2 id="ruby的安装"><a href="#ruby的安装" class="headerlink" title="ruby的安装"></a>ruby的安装</h2><p>ruby的版本可以通过<a target="_blank" rel="noopener" href="https://rubyinstaller.org/downloads/">https://rubyinstaller.org/downloads/</a><br>进入网站下载。下载ruby安装包之后直接点击进行安装就可以。<br>查看版本：cmd中输入<code>buby -version</code>  可以查看buby版本，就代表ruby安装成功了。  </p>
-<h2 id="gem的更新"><a href="#gem的更新" class="headerlink" title="gem的更新"></a>gem的更新</h2><p>输入<code>gem -v</code>可以查看当前gem的版本<br>为了进一步安装需要的ruby包，需要升级gem本身，这里使用update命令进行gem的升级<br><code>gem update --system</code><br>之后就可以使用gem安装其它的ruby 包。比如：安装activemodel 5.0.0.1包<br><code>gem install activemodel --version=5.0.0.1</code>  </p>
-<h2 id="Ruby-Gem命令详解"><a href="#Ruby-Gem命令详解" class="headerlink" title="Ruby Gem命令详解"></a>Ruby Gem命令详解</h2><p>更新gem自身：<code>gem update --system</code>  </p>
-<p>从gem源安装gem包： <code>gem install [gemname]</code>  </p>
-<p>从本机安装gem包：<code>gem install -l [gemname].gem</code>  </p>
-<p>安装指定版本的gem包：<code>gem install [gemname] --version=[ver]</code>  </p>
-<p>更新所有已安装的gem包：<code>gem update</code>  </p>
-<p>更新指定的gem包：<code>gem update [gemname]</code>  </p>
-<p>删除指定的gem包（注意此命令将删除改gem包已安装的所有版本）：<code>gem uninstall [gemname]</code>  </p>
-<p>删除某指定版本gem：<code>gem uninstall [gemname] --version=[ver]</code>  </p>
-<p>查看本机已经安装的所有gem包： <code>gem list</code>  </p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/01/06/windows%E4%B8%8Bruby%E7%9A%84%E4%B8%8B%E8%BD%BD%E4%B8%8Egem%E5%AE%89%E8%A3%85/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -357,10 +353,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="0x01-sql注入类型，绕过及防御"><a href="#0x01-sql注入类型，绕过及防御" class="headerlink" title="0x01 sql注入类型，绕过及防御"></a>0x01 sql注入类型，绕过及防御</h2><h3 id="1-sql注入类型"><a href="#1-sql注入类型" class="headerlink" title="1 sql注入类型"></a>1 sql注入类型</h3><p>联合注入 （union）<br>报错注入 （xpath语法错误导致，主要利用extractvalue和updatexml两个函数）<br>布尔注入 (?id =1’ and 1=1  ?id=1’ and 1=2判断注入点与延时注入类似，利用猜测的方法)<br>延时注入 （sleep()函数，用length(),substr(),ascii(),if()等来进行判断数据库内容)<br>二次注入 （未正确过滤数据，攻击者构造的恶意数据存储在数据库中，注册账户admin’–）<br>堆叠注入 (mysql_multi_query(),可支持多个sql语句同时执行，用；进行分隔）<br>头部注入 （更改请求头部信息，前提是请求头部也可以向数据库发送查询信息）<br>宽字节注入 （GBK占用2字节，ASCII占用1字节，addslashes()）  </p>
-<h3 id="2-绕过方法"><a href="#2-绕过方法" class="headerlink" title="2 绕过方法"></a>2 绕过方法</h3><p>双写关键字 （select改为seleselectct）<br>替换关键字 ( and = &amp;&amp;   or = || &emsp;  xor = | &emsp; not = !  等于号可以改成like  &lt;&gt; 等价于 !=<br>大小写 （如：select改为Select）<br>使用注释符（–  #  /*  */）<br>特殊编码 （十六进制   ascii编码 ）<br>空格过滤绕过（ /*  */   两个空格  tap  `  回车 ()）  </p>
-<h3 id="3-防御方法"><a href="#3-防御方法" class="headerlink" title="3 防御方法"></a>3 防御方法</h3><p>过滤关键字，空格注释符等，<br>使用转义<br>设置数据库权限，使其只能查询不能更新和写入<br>限制查询长度<br>限制查询类型   </p>
-
+          <h2 id="0x01-sql注入类型，绕过及防御"><a href="#0x01-sql注入类型，绕过及防御" class="headerlink" title="0x01 sql注入类型，绕过及防御"></a>0x01 sql注入类型，绕过及防御</h2>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/01/05/sql%E6%B3%A8%E5%85%A5%E9%9D%A2%E8%AF%95%E9%A2%98/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
